@@ -3,6 +3,7 @@ from PySide6.QtGui import QAction
 
 from MainWindow.SettingMenu.SettingDialog.SettingDialog import SettingsDialog
 from utils.Translator import Translator
+from utils.LanguageNotifier import LanguageNotifier
 
 class SettingMenu(QMenu):
     settingAction: QAction
@@ -14,6 +15,8 @@ class SettingMenu(QMenu):
         self.settingAction.triggered.connect(self.openSettingDialog)
 
         self.updateTexts()
+
+        LanguageNotifier.instance().languageChanged.connect(self.updateTexts)
 
     def openSettingDialog(self):
         dlg = SettingsDialog(self)

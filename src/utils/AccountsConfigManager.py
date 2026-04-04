@@ -20,3 +20,11 @@ class AccountsConfigManager:
         accounts[accountId] = accountData
         Config.cfg['accounts'] = accounts
         Config.save()
+
+    @staticmethod
+    def deleteAccount(accountId):
+        accounts = AccountsConfigManager.getAccounts()
+        if accountId in accounts:
+            del accounts[accountId]
+            Config.cfg['accounts'] = accounts
+            Config.save()

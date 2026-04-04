@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction, QActionGroup
 
 from utils.Translator import Translator
-
+from utils.LanguageNotifier import LanguageNotifier
 
 class LeftToolBar(QToolBar):
     actionTriggered = Signal(object)
@@ -35,6 +35,8 @@ class LeftToolBar(QToolBar):
         self.addAction(self.accountsAction)
 
         self.updateTexts()
+
+        LanguageNotifier.instance().languageChanged.connect(self.updateTexts)
 
     def updateChecks(self, activeAction: QAction):
         if activeAction:

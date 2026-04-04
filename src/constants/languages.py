@@ -1,4 +1,3 @@
-
 from enum import Enum
 from typing import Dict
 
@@ -10,4 +9,3 @@ LANGUAGES: Dict[LanguageKey, str] = {
     LanguageKey.ENGLISH.value: 'English',
     LanguageKey.CHINESE_HK.value: '繁體中文',
 }
-

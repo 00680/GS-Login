@@ -57,5 +57,48 @@ TRANSLATIONS = {
         LanguageKey.ENGLISH.value: 'Add',
         LanguageKey.CHINESE_HK.value: '新增',
     },
-
+    'processesPage.title': {
+        LanguageKey.ENGLISH.value: 'Processes',
+        LanguageKey.CHINESE_HK.value: '程序',
+    },
+    'processDialog.title': {
+        LanguageKey.ENGLISH.value: 'Add/Edit Process',
+        LanguageKey.CHINESE_HK.value: '新增/編輯程序',
+    },
+    'processDialog.serverLabel': {
+        LanguageKey.ENGLISH.value: 'Server',
+        LanguageKey.CHINESE_HK.value: '伺服器',
+    },
+    'processDialog.pathLabel': {
+        LanguageKey.ENGLISH.value: 'Game Path',
+        LanguageKey.CHINESE_HK.value: '遊戲路徑',
+    },
+    'processDialog.browseButton': {
+        LanguageKey.ENGLISH.value: 'Browse',
+        LanguageKey.CHINESE_HK.value: '瀏覽',
+    },
+    'processDialog.fileDialogTitle': {
+        LanguageKey.ENGLISH.value: 'Select Game Folder',
+        LanguageKey.CHINESE_HK.value: '選擇遊戲資料夾',
+    },
+    'processDialog.invalidPathTitle': {
+        LanguageKey.ENGLISH.value: 'Invalid Path',
+        LanguageKey.CHINESE_HK.value: '無效的路徑',
+    },
+    'processDialog.invalidPathMessage': {
+        LanguageKey.ENGLISH.value: 'Please select a valid folder path.',
+        LanguageKey.CHINESE_HK.value: '請選擇有效的資料夾路徑。',
+    },
+    'processDialog.missingFilesTitle': {
+        LanguageKey.ENGLISH.value: 'Missing Files',
+        LanguageKey.CHINESE_HK.value: '缺少文件',
+    },
+    'processDialog.missingFilesMessage': {
+        LanguageKey.ENGLISH.value: 'The selected folder must contain run.exe and Gersang.exe',
+        LanguageKey.CHINESE_HK.value: '選擇的資料夾必須包含run.exe和Gersang.exe',
+    },
+    'processListItem.selectAccount': {
+        LanguageKey.ENGLISH.value: 'Select account',
+        LanguageKey.CHINESE_HK.value: '選擇帳號',
+    },
 }

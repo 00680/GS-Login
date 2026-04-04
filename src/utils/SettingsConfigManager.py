@@ -1,5 +1,6 @@
 from config.ConfigLoader import Config, ConfigLoader
 from constants.languages import LanguageKey
+from utils.LanguageNotifier import LanguageNotifier
 
 class SettingsConfigManager:
     @staticmethod
@@ -13,6 +14,8 @@ class SettingsConfigManager:
             Config.cfg['settings'] = {}
         Config.cfg['settings']['language'] = language
         Config.save()
+
+        LanguageNotifier.instance().languageChanged.emit()
 
     @staticmethod
     def getCapSolverApiKey():
