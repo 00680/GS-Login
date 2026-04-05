@@ -5,19 +5,19 @@ from utils.GersangChecker import GersangChecker
 from qt_material_icons import MaterialIcon
 
 from constants.servers import SERVERS
-from utils.GersangUtils import GersangUtils
 from utils.AccountsConfigManager import AccountsConfigManager
 from utils.Translator import Translator
+
 
 class ProcessListItem(QWidget):
     editRequested = Signal(object)
     deleteRequested = Signal(object)
     runRequested = Signal(object, object)
-    checker :GersangChecker
+    checker: GersangChecker
 
     def __init__(self, processData: dict, parent=None):
         super().__init__(parent)
-    
+
         self.processId = processData.get('path')
         self.processData = processData
 
@@ -40,38 +40,33 @@ class ProcessListItem(QWidget):
         self.accountCombo.setFixedWidth(200)
         self.accountCombo.addItem(Translator.translate('processListItem.selectAccount'), None)
 
-        accounts = AccountsConfigManager.getAccounts()
-        procServer = self.processData.get('server', '')
-        for accId, accData in accounts.items():
-            accServer = accData.get('server', '')
-            if accServer != procServer:
-                continue
-            username = accData.get('username', '')
-            display = f"{username}@{SERVERS.get(accServer)}"
-            self.accountCombo.addItem(display, accId)
+        self.populateAccountCombo()
 
         self.accountCombo.setCurrentIndex(0)
 
         layout.addWidget(self.accountCombo, alignment=Qt.AlignVCenter)
 
-        runBtn = QPushButton(self)
+        self.runBtn = QPushButton(self)
         runIcon = MaterialIcon('play_arrow', size=40)
         runIconColor = QColor('#4CAF50')
         runIcon.set_color(runIconColor)
-        runBtn.setIcon(runIcon)
-        runBtn.setIconSize(QSize(30, 30))
-        runBtn.setFixedSize(30, 30)
-        runBtn.setFlat(True)
-        runBtn.setEnabled(False)
-        runBtn.clicked.connect(self.onRunClicked)
-        layout.addWidget(runBtn)
+        self.runBtn.setIcon(runIcon)
+        self.runBtn.setIconSize(QSize(30, 30))
+        self.runBtn.setFixedSize(30, 30)
+        self.runBtn.setFlat(True)
+        self.runBtn.setEnabled(False)
+        self.runBtn.clicked.connect(self.onRunClicked)
+        layout.addWidget(self.runBtn)
 
         def onAccountChanged(idx):
             try:
                 data = self.accountCombo.itemData(idx)
             except Exception:
                 data = None
-            runBtn.setEnabled(bool(data))
+            try:
+                self._updateRunButtonState()
+            except Exception:
+                self.runBtn.setEnabled(bool(data))
 
         self.accountCombo.currentIndexChanged.connect(onAccountChanged)
 
@@ -104,10 +99,60 @@ class ProcessListItem(QWidget):
         self.checker.statusChanged.connect(self.onCheckerStatus)
         self.checker.start()
 
+        # internal state for run button control
+        self._checker_running = None
+        self._disabled_by_login = False
+
         self.destroyed.connect(lambda: self.stopChecker())
 
         self.statusLabel.setText('?')
         self.statusLabel.setStyleSheet('color: #FFC107; font-size: 12px;')
+
+    def populateAccountCombo(self):
+        # populate combo preserving selection if possible
+        try:
+            current = self.accountCombo.currentData()
+        except Exception:
+            current = None
+
+        # reset but keep the first entry (selectAccount)
+        self.accountCombo.blockSignals(True)
+        self.accountCombo.clear()
+        self.accountCombo.addItem(Translator.translate('processListItem.selectAccount'), None)
+
+        accounts = AccountsConfigManager.getAccounts()
+        procServer = self.processData.get('server', '')
+        selected_index = 0
+        idx = 1
+
+        for accId, accData in accounts.items():
+            accServer = accData.get('server', '')
+            if accServer != procServer:
+                continue
+            username = accData.get('username', '')
+            display = f"{SERVERS.get(accServer)} @ {username}"
+            self.accountCombo.addItem(display, accId)
+            if current == accId:
+                selected_index = idx
+            idx += 1
+
+        try:
+            self.accountCombo.setCurrentIndex(selected_index)
+        except Exception:
+            self.accountCombo.setCurrentIndex(0)
+
+        self.accountCombo.blockSignals(False)
+        try:
+            self._updateRunButtonState()
+        except Exception:
+            pass
+
+    def refreshAccounts(self):
+        # Called when accounts list changes
+        try:
+            self.populateAccountCombo()
+        except Exception:
+            pass
 
     def onRunClicked(self):
         try:
@@ -134,6 +179,12 @@ class ProcessListItem(QWidget):
         self.checker = None
 
     def onCheckerStatus(self, running):
+        # remember checker state and update run button accordingly
+        try:
+            self._checker_running = running
+        except Exception:
+            self._checker_running = None
+
         if running is True:
             self.statusLabel.setText('●')
             self.statusLabel.setStyleSheet('color: #4CAF50; font-size: 16px;')
@@ -144,6 +195,32 @@ class ProcessListItem(QWidget):
             self.statusLabel.setText('?')
             self.statusLabel.setStyleSheet('color: #FFC107; font-size: 12px;')
 
+        try:
+            self._updateRunButtonState()
+        except Exception:
+            pass
+
+    def _updateRunButtonState(self):
+        try:
+            has_account = bool(self.accountCombo.currentData())
+        except Exception:
+            has_account = False
+
+        checker_ok = (self._checker_running is False)
+
+        enabled = bool(has_account and checker_ok and not self._disabled_by_login)
+        self.runBtn.setEnabled(enabled)
+
+    def setLoginDisabled(self, disabled: bool):
+        try:
+            self._disabled_by_login = bool(disabled)
+            self._updateRunButtonState()
+        except Exception:
+            try:
+                self.runBtn.setEnabled(not disabled)
+            except Exception:
+                pass
+
     def updateDisplay(self):
         try:
             path = self.processData.get('path', '')
@@ -151,3 +228,4 @@ class ProcessListItem(QWidget):
             self.infoLabel.setText(f"{SERVERS.get(server)} @ {path}")
         except Exception:
             pass
+

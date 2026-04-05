@@ -1,1 +1,4 @@
 __pycache__
+resources/playwright_browsers
+build
+dist

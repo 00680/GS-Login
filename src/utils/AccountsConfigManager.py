@@ -1,4 +1,5 @@
 from config.ConfigLoader import Config
+from utils.AccountsNotifier import AccountsNotifier
 
 
 class AccountsConfigManager:
@@ -20,6 +21,10 @@ class AccountsConfigManager:
         accounts[accountId] = accountData
         Config.cfg['accounts'] = accounts
         Config.save()
+        try:
+            AccountsNotifier.instance().accountsChanged.emit()
+        except Exception:
+            pass
 
     @staticmethod
     def deleteAccount(accountId):
@@ -28,3 +33,7 @@ class AccountsConfigManager:
             del accounts[accountId]
             Config.cfg['accounts'] = accounts
             Config.save()
+            try:
+                AccountsNotifier.instance().accountsChanged.emit()
+            except Exception:
+                pass

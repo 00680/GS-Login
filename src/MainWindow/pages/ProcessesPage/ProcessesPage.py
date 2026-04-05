@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import QColor
 from qt_material_icons import MaterialIcon
 
@@ -8,6 +8,7 @@ from MainWindow.pages.ProcessesPage.ProcessDialog.ProcessDialog import ProcessDi
 from utils.ProcessesConfigManager import ProcessesConfigManager
 from utils.Translator import Translator
 from utils.LanguageNotifier import LanguageNotifier
+from utils.AccountsNotifier import AccountsNotifier
 from utils.AutoLogin import startLogin
 
 class ProcessesPage(QWidget):
@@ -49,6 +50,21 @@ class ProcessesPage(QWidget):
         self.updateTexts()
 
         LanguageNotifier.instance().languageChanged.connect(self.updateTexts)
+        try:
+            AccountsNotifier.instance().accountsChanged.connect(self.onAccountsChanged)
+        except Exception:
+            pass
+
+    def onAccountsChanged(self):
+        # refresh account combos for all visible process items
+        for i in range(self.processList.count()):
+            item = self.processList.item(i)
+            widget = self.processList.itemWidget(item)
+            try:
+                if widget:
+                    widget.refreshAccounts()
+            except Exception:
+                pass
 
     def updateTexts(self):
         self.title.setText(Translator.translate('processesPage.title'))
@@ -112,5 +128,40 @@ class ProcessesPage(QWidget):
     def onRunProcess(self, processId, accountId):
         if not accountId:
             return
-        
-        startLogin(processId, accountId)
+        idx, item, widget = self.findItemWidget(processId)
+        if widget is None:
+            # fallback: just start
+            startLogin(processId, accountId)
+            return
+
+        # mark widget as disabled by login process (it will manage re-enable)
+        try:
+            widget.setLoginDisabled(True)
+        except Exception:
+            widget.runBtn.setEnabled(False)
+
+        thread = startLogin(processId, accountId)
+
+        # poll the thread and clear the login-disabled flag when done
+        try:
+            timer = QTimer(self)
+            timer.setInterval(300)
+
+            def check():
+                try:
+                    alive = thread.is_alive()
+                except Exception:
+                    alive = False
+
+                if not alive:
+                    try:
+                        widget.setLoginDisabled(False)
+                    except Exception:
+                        widget.runBtn.setEnabled(True)
+
+                    timer.stop()
+
+            timer.timeout.connect(check)
+            timer.start()
+        except Exception:
+            pass
