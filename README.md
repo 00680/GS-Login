@@ -135,6 +135,6 @@ python -m PyInstaller --clean --noconfirm gslogin.spec
 
 ## User Guide
 
-- English: [USER_GUIDE_EN.md](v2/USER_GUIDE_EN.md)
-- 繁體中文: [USER_GUIDE_ZH_TW.md](v2/USER_GUIDE_ZH_TW.md)
+- English: [USER_GUIDE_EN.md](USER_GUIDE_EN.md)
+- 繁體中文: [USER_GUIDE_ZH_TW.md](USER_GUIDE_ZH_TW.md)
 
