@@ -54,6 +54,12 @@ python -m PyInstaller --clean --noconfirm gslogin.spec
   - `GSLOGIN_CONSOLE=1`: enable console logging for debugging
   - `GSLOGIN_DISABLE_LOG=1`: disable logging entirely
 
+**CapSolver integration (captcha):**
+- GSLogin uses `playwright-recaptcha` with a CapSolver API key from the Settings page.
+- Official website: https://www.capsolver.com/zh
+- For TW login automation, captcha solving requires a valid CapSolver key; if missing or invalid, automated login may stop before completion.
+- Keep the API key private and ensure your CapSolver account has available balance/quota.
+
 **Debugging builds:**
 - For easier inspection, change the spec to build `ONEFILE = False` or run PyInstaller with a one-folder build. This leaves browser files and runtime hooks as regular files on disk.
 
@@ -115,6 +121,12 @@ python -m PyInstaller --clean --noconfirm gslogin.spec
   - `PLAYWRIGHT_BROWSERS_PATH`：Playwright 瀏覽器執行檔所在資料夾
   - `GSLOGIN_CONSOLE=1`：啟用主控台日誌以便除錯
   - `GSLOGIN_DISABLE_LOG=1`：完全關閉日誌
+
+**CapSolver 整合（驗證碼）：**
+- GSLogin 透過 `playwright-recaptcha` 使用設定頁中的 CapSolver API Key。
+- 官方網站：https://www.capsolver.com/zh
+- 在 TW 自動登入流程中，驗證碼解題需要有效的 CapSolver Key；若未設定或金鑰無效，流程可能在完成前停止。
+- 請妥善保管 API Key，並確認 CapSolver 帳號有可用額度/餘額。
 
 **除錯建議：**
 - 若要方便檢視打包內容，請在 spec 將 `ONEFILE` 設為 `False` 或以 one-folder 方式打包，這樣檔案會以資料夾形式保留在磁碟上。

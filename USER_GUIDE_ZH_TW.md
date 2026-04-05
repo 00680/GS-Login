@@ -11,10 +11,16 @@
   - OTP / 兩步驗證：在此欄填入帳號的 OTP 秘密金鑰（TOTP/HOTP 共享密鑰）。程式會使用此秘鑰自動產生一次性驗證碼；請不要在此處填入單次使用的一次性代碼。（必填）
  - 儲存帳號。可以新增多個帳號，並稍後編輯或刪除。
 
-2. CapSolver API Key（設定頁面）
-- 開啟設定（Settings）頁面。
-- 找到 CapSolver 或驗證碼解決服務的 API Key 欄位。
-- 貼上你的 CapSolver API Key 並儲存設定。此項設定可在遇到驗證碼時自動使用服務解決。
+2. CapSolver（驗證碼解決）
+- 功能說明：GSLogin 透過 `playwright-recaptcha` 串接 CapSolver，在 TW 登入流程中處理 reCAPTCHA。
+- 官方網站：https://www.capsolver.com/zh
+- 設定位置：開啟設定（Settings）頁面，找到 `CapSolver API Key` 欄位。
+- 設定方式：
+  - 從 CapSolver 後台複製 API Key。
+  - 貼到欄位後儲存。
+- 重要行為：
+  - 若未設定 API Key，驗證碼自動解題不會啟動，自動登入流程會停止。
+  - 若 API Key 無效、額度不足，或 CapSolver 服務暫時異常，可能造成驗證碼解題失敗，登入無法完成。
 
 3. 遊戲資料夾（Process 頁面）
 - 開啟 Process 頁面（或管理遊戲資料夾/程序的頁面）。
@@ -29,9 +35,13 @@
 
 注意事項
  - 針對需要 OTP 的 TW 帳號，請在 OTP 欄位填入該帳號的 OTP 秘密金鑰，程式即可自動產生一次性驗證碼。若您不希望儲存秘鑰，執行時也會提示您輸入一次性驗證碼。
-- 若預期會遇到驗證碼，請確保 CapSolver API Key 有效；否則可能需要手動處理驗證碼。
+- CapSolver 需要可用的網路連線與啟用中的 CapSolver 帳號。
+- 請妥善保管 API Key，避免在截圖或日誌中外流。
 - 若需要 Playwright 的瀏覽器執行檔，請依照建置說明或腳本準備 `PLAYWRIGHT_BROWSERS_PATH`。
 
 故障排除
  - 若登入失敗，檢查應用程式日誌並確認帳號與資料夾路徑正確。
+- 重新確認設定頁中的 CapSolver API Key（避免前後空白或換行）。
+- 確認 CapSolver 帳號有可用額度/餘額。
+- 若驗證碼解題偶發失敗，可稍後重試。
 - 檢查網路連線與任何可能阻擋自動瀏覽器控制的防毒或系統限制。
