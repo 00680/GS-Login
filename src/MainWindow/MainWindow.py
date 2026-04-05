@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from MainWindow.SettingMenu.SettingMenu import SettingMenu
+from MainWindow.HelpMenu.HelpMenu import HelpMenu
 from MainWindow.LeftToolBar.LeftToolBar import LeftToolBar
 from MainWindow.pages.AccountsPage.AccountsPage import AccountsPage
 from MainWindow.pages.ProcessesPage.ProcessesPage import ProcessesPage
@@ -23,6 +24,7 @@ class MainWindow(QMainWindow):
         self.setFixedSize(self.size())
 
         self.menuBar().addMenu(SettingMenu(self))
+        self.menuBar().addMenu(HelpMenu(self))
 
         self.toolbar = LeftToolBar(self)
         self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)

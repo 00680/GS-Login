@@ -101,4 +101,16 @@ TRANSLATIONS = {
         LanguageKey.ENGLISH.value: 'Select account',
         LanguageKey.CHINESE_HK.value: '選擇帳號',
     },
+    'helpMenu.title': {
+        LanguageKey.ENGLISH.value: 'Help',
+        LanguageKey.CHINESE_HK.value: '說明',
+    },
+    'helpMenu.userGuideEN': {
+        LanguageKey.ENGLISH.value: 'User Guide (English)',
+        LanguageKey.CHINESE_HK.value: '使用指南（English）',
+    },
+    'helpMenu.userGuideZH_TW': {
+        LanguageKey.ENGLISH.value: 'User Guide (繁體中文)',
+        LanguageKey.CHINESE_HK.value: '使用指南（繁體中文）',
+    },
 }
