@@ -3,8 +3,6 @@ from PySide6.QtCore import QSize, Signal
 from PySide6.QtGui import QColor
 from qt_material_icons import MaterialIcon
 
-from constants.servers import SERVERS
-
 class AccountListItem(QWidget):
     editRequested = Signal(object)
     deleteRequested = Signal(object)
@@ -18,8 +16,7 @@ class AccountListItem(QWidget):
         layout.setContentsMargins(6, 6, 6, 6)
 
         username = self.accountData.get('username', '')
-        server = self.accountData.get('server', '')
-        label = QLabel(f"{SERVERS.get(server)} @ {username}", self)
+        label = QLabel(f"{username}", self)
         layout.addWidget(label)
 
         layout.addStretch()

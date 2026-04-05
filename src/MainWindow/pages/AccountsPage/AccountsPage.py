@@ -67,14 +67,14 @@ class AccountsPage(QWidget):
 
     def onAddButtonClicked(self):
         dlg = AccountDialog(self)
-        dlg.exec()
-        self.loadAccounts()
+        if dlg.exec() == 1:
+            self.loadAccounts()
 
     def onEditAccount(self, accountId):
         accountData = AccountsConfigManager.getAccountById(accountId)
         dlg = AccountDialog(self, accountData)
-        dlg.exec()
-        self.loadAccounts()
+        if dlg.exec() == 1:
+            self.loadAccounts()
 
     def onDeleteAccount(self, accountId):
         if accountId:

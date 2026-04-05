@@ -126,15 +126,14 @@ class ProcessesPage(QWidget):
 
     def onAddButtonClicked(self):
         dlg = ProcessDialog(self)
-        dlg.exec()
-        self.loadProcesses()
+        if dlg.exec() == 1:
+            self.loadProcesses()
 
     def onEditProcess(self, processId):
         procData = ProcessesConfigManager.getProcessById(processId)
         dlg = ProcessDialog(self, procData)
-        dlg.exec()
-
-        self.refreshProcess(processId)
+        if dlg.exec() == 1:
+            self.refreshProcess(processId)
 
     def onDeleteProcess(self, processId):
         if processId:

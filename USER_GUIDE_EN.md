@@ -5,12 +5,11 @@ This short guide explains how to use the GSLogin GUI to configure accounts, game
 1. Accounts (Account page)
 - Open the Account page in the application.
 - Click Add / New to create a new account entry.
-- Fill in the following fields:
-  - Username: your account name or email.
-  - Password: the account password.
-  - OTP / 2FA: optional — only required for the TW server (enter one-time password if applicable).
-  - Server: select the target game server from the list.
-- Save the account. You can add multiple accounts and edit or remove them later.
+- Fill in the following fields (required):
+  - Username: your account name or email. (required)
+  - Password: the account password. (required)
+  - OTP / 2FA: enter the account's OTP secret key (TOTP/HOTP shared secret). The app uses this secret to generate one-time codes automatically; do not enter a single-use one-time code here. (required)
+Save the account. You can add multiple accounts and edit or remove them later.
 
 2. CapSolver API Key (Settings page)
 - Open the Settings page.
@@ -29,10 +28,10 @@ This short guide explains how to use the GSLogin GUI to configure accounts, game
 - The application will launch the game/browser and attempt the configured login using the selected account and folder. Monitor logs or on-screen status for progress and errors.
 
 Notes
-- For TW server accounts that require an OTP, make sure to provide the current one-time code when creating or editing the account.
-- Ensure the CapSolver API key is valid if captchas are expected; otherwise manual captcha interaction may be required.
+ - For TW accounts that require an OTP, provide the account's OTP secret key in the OTP field so the app can generate one-time codes. If you prefer not to store the secret, you may be prompted to enter a one-time code at runtime.
+ - Ensure the CapSolver API key is valid if captchas are expected; otherwise manual captcha interaction may be required.
 - If Playwright browser runtimes are required, follow the build/readme instructions to prepare `PLAYWRIGHT_BROWSERS_PATH` or install browsers via the helper script.
 
 Troubleshooting
-- If login fails, check the application log output and confirm account credentials, server selection, and folder path are correct.
+ - If login fails, check the application log output and confirm account credentials and folder path are correct.
 - Check network connectivity and any antivirus/OS restrictions that may block automated browser control.

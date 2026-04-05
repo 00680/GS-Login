@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle('GSLogin')
 
-        self.resize(800, 400)
+        self.resize(700, 400)
         self.setFixedSize(self.size())
 
         self.menuBar().addMenu(SettingMenu(self))

@@ -18,6 +18,19 @@ class AccountsConfigManager:
         accountId = accountData.get('id')
         if not accountId:
             raise ValueError("Account data must contain an 'id' field.")
+        # Validate required fields
+        username = accountData.get('username')
+        password = accountData.get('password')
+        otp = accountData.get('otp')
+        missing = []
+        if not username:
+            missing.append('username')
+        if not password:
+            missing.append('password')
+        if not otp:
+            missing.append('otp')
+        if missing:
+            raise ValueError(f"Missing required account fields: {', '.join(missing)}")
         accounts[accountId] = accountData
         Config.cfg['accounts'] = accounts
         Config.save()

@@ -38,10 +38,10 @@ except Exception:
     # If detection fails, continue without raising; user can populate manually.
     pass
 
-# Include project icon if present
-icon_rel = os.path.join('resources', 'icon.ico')
+# Include project icon if present (now located at `src/images/`)
+icon_rel = os.path.join('src', 'images', 'icon.ico')
 if os.path.exists(icon_rel):
-    extra_datas.append((icon_rel, 'resources'))
+    extra_datas.append((icon_rel, 'src/images'))
 
 # Runtime hook to configure bundled Playwright browser path at startup.
 runtime_hooks = [os.path.join('runtime_hooks', 'set_playwright_browsers_path.py')]
@@ -76,7 +76,7 @@ if ONEFILE:
         a.datas,
         exclude_binaries=False,
         name='GSLogin',
-        icon=icon_rel if os.path.exists(icon_rel) else None,
+        icon=['src/images/icon.ico'],
         debug=False,
         bootloader_ignore_signals=False,
         strip=False,
@@ -91,7 +91,7 @@ else:
         [],
         exclude_binaries=True,
         name='GSLogin',
-        icon=icon_rel if os.path.exists(icon_rel) else None,
+        icon=['src/images/icon.ico'],
         debug=False,
         bootloader_ignore_signals=False,
         strip=False,

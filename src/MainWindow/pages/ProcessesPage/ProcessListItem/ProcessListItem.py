@@ -4,10 +4,8 @@ from PySide6.QtGui import QColor
 from utils.GersangChecker import GersangChecker
 from qt_material_icons import MaterialIcon
 
-from constants.servers import SERVERS
 from utils.AccountsConfigManager import AccountsConfigManager
 from utils.Translator import Translator
-
 
 class ProcessListItem(QWidget):
     editRequested = Signal(object)
@@ -25,14 +23,13 @@ class ProcessListItem(QWidget):
         layout.setContentsMargins(6, 6, 6, 6)
 
         path = self.processData.get('path', '')
-        server = self.processData.get('server', '')
 
         self.statusLabel = QLabel(self)
         self.statusLabel.setFixedWidth(18)
         self.statusLabel.setAlignment(self.statusLabel.alignment())
         layout.addWidget(self.statusLabel)
 
-        self.infoLabel = QLabel(f"{SERVERS.get(server)} @ {path}", self)
+        self.infoLabel = QLabel(f"{path}", self)
         layout.addWidget(self.infoLabel)
 
         self.accountCombo = QComboBox(self)
@@ -95,8 +92,17 @@ class ProcessListItem(QWidget):
         self.setLayout(layout)
 
         path = self.processData.get('path', '')
-        self.checker = GersangChecker(path, interval=5.0, parent=self)
+        # Do NOT set the thread's parent to the widget: if the widget is destroyed
+        # while the thread is still running, Qt will warn `QThread: Destroyed while
+        # thread '' is still running` and the app can freeze. Keep the thread
+        # independent and delete it when it finishes.
+        self.checker = GersangChecker(path, interval=5.0, parent=None)
         self.checker.statusChanged.connect(self.onCheckerStatus)
+        # ensure we clean up the thread object when it finishes
+        try:
+            self.checker.finished.connect(self._onCheckerFinished)
+        except Exception:
+            pass
         self.checker.start()
 
         # internal state for run button control
@@ -121,16 +127,12 @@ class ProcessListItem(QWidget):
         self.accountCombo.addItem(Translator.translate('processListItem.selectAccount'), None)
 
         accounts = AccountsConfigManager.getAccounts()
-        procServer = self.processData.get('server', '')
         selected_index = 0
         idx = 1
 
         for accId, accData in accounts.items():
-            accServer = accData.get('server', '')
-            if accServer != procServer:
-                continue
             username = accData.get('username', '')
-            display = f"{SERVERS.get(accServer)} @ {username}"
+            display = f"{username}"
             self.accountCombo.addItem(display, accId)
             if current == accId:
                 selected_index = idx
@@ -162,21 +164,33 @@ class ProcessListItem(QWidget):
         self.runRequested.emit(self.processId, accId)
 
     def stopChecker(self):
+        # Request the checker thread to stop but do not block the GUI.
         try:
-            self.checker.requestInterruption()
-        except Exception:
-            pass
+            try:
+                self.checker.statusChanged.disconnect(self.onCheckerStatus)
+            except Exception:
+                pass
 
-        try:
-            self.checker.wait(1000)
+            # ask the thread to stop
+            self.checker.requestInterruption()
+
+            # if it's already finished, schedule deletion and clear reference
+            if not self.checker.isRunning():
+                try:
+                    self.checker.deleteLater()
+                except Exception:
+                    pass
+                self.checker = None
+            else:
+                # otherwise leave the object alive; _onCheckerFinished will
+                # clear the reference when the thread emits `finished`.
+                try:
+                    # ensure finished handler is connected
+                    self.checker.finished.connect(self._onCheckerFinished)
+                except Exception:
+                    pass
         except Exception:
             pass
-        
-        try:
-            self.checker.stop()
-        except Exception:
-            pass
-        self.checker = None
 
     def onCheckerStatus(self, running):
         # remember checker state and update run button accordingly
@@ -224,8 +238,19 @@ class ProcessListItem(QWidget):
     def updateDisplay(self):
         try:
             path = self.processData.get('path', '')
-            server = self.processData.get('server', '')
-            self.infoLabel.setText(f"{SERVERS.get(server)} @ {path}")
+            self.infoLabel.setText(f"{path}")
+        except Exception:
+            pass
+
+    def _onCheckerFinished(self):
+        try:
+            # safe cleanup when thread exits
+            if getattr(self, 'checker', None):
+                try:
+                    self.checker.deleteLater()
+                except Exception:
+                    pass
+            self.checker = None
         except Exception:
             pass
 

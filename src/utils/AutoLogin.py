@@ -9,9 +9,8 @@ import struct
 import os
 import subprocess
 
-from playwright.sync_api import sync_playwright
-from playwright_recaptcha import recaptchav2
-
+# Lazy-import heavy playwright modules at runtime to avoid slowing
+# application startup when this module is merely imported by the UI.
 from utils.AccountsConfigManager import AccountsConfigManager
 from utils.ProcessesConfigManager import ProcessesConfigManager
 from utils.SettingsConfigManager import SettingsConfigManager
@@ -37,18 +36,6 @@ class AutoLogin:
         self.firefox_prefs = firefox_prefs or dict(self.DEFAULT_FIREFOX_PREFS)
         self.keep_open_seconds = float(keep_open_seconds)
         self._thread: threading.Thread | None = None
-
-    def loginGlobal(self, page, account: dict):
-        username = account.get('username', '')
-        password = account.get('password', '')
-        try:
-            page.goto('https://example-global.example/login')
-            page.fill('input[name="username"]', username)
-            page.fill('input[name="password"]', password)
-            page.click('button[type="submit"]')
-            return True
-        except Exception:
-            return False
 
     def loginTW(self, page, account: dict):
         username = account.get('username', '')
@@ -128,13 +115,12 @@ class AutoLogin:
 
     def performLogin(self):
         acct = AccountsConfigManager.getAccountById(self.account_id) if self.account_id else None
-        proc = ProcessesConfigManager.getProcessById(self.process_id)
-        server = proc.get('server') if proc else None
-
-        if not acct or not server:
-            return
 
         try:
+            # import here to avoid importing Playwright during application
+            # module import time (which is expensive and slows exe startup)
+            from playwright.sync_api import sync_playwright
+
             with sync_playwright() as p:
                 import tempfile
                 profile_dir = tempfile.mkdtemp(prefix='gslogin_firefox_')
@@ -143,15 +129,14 @@ class AutoLogin:
                     headless=self.headless,
                     firefox_user_prefs=self.firefox_prefs,
                 )
-                page = context.new_page()
-
-                ok = False
-                if server == 'global':
-                    ok = self.loginGlobal(page, acct)
-                elif server == 'tw':
-                    ok = self.loginTW(page, acct)
+                # reuse the initial page created by the persistent context
+                pages = context.pages
+                if pages:
+                    page = pages[0]
                 else:
-                    ok = self.loginGlobal(page, acct)
+                    page = context.new_page()
+
+                ok = self.loginTW(page, acct)
 
                 time.sleep(self.keep_open_seconds)
                 try:
@@ -168,6 +153,9 @@ class AutoLogin:
             return False
         
         try:
+            # playwright-recaptcha is optional and can be slow to import; import lazily
+            from playwright_recaptcha import recaptchav2
+
             solver = recaptchav2.SyncSolver(page, capsolver_api_key=capsolver_key)
             res = solver.solve_recaptcha(wait=True, image_challenge=True)
             

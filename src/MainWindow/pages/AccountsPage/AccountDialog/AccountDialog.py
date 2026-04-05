@@ -1,10 +1,9 @@
-from PySide6.QtWidgets import QDialog, QFormLayout, QLineEdit
+from PySide6.QtWidgets import QDialog, QFormLayout, QLineEdit, QMessageBox
 import time
 
 from utils.Translator import Translator
 from utils.AccountsConfigManager import AccountsConfigManager
 from MainWindow.pages.AccountsPage.AccountDialog.AccountDialogButton.AccountDialogButton import AccountDialogButton
-from MainWindow.pages.AccountsPage.AccountDialog.ServerComboBox.ServerComboBox import ServerComboBox
 
 class AccountDialog(QDialog):
     def __init__(self, parent=None, accountData=None):
@@ -17,9 +16,6 @@ class AccountDialog(QDialog):
         self.idLineEdit.setText(str(int(time.time() * 1000)))
         self.idLineEdit.setVisible(False)
         
-        self.serversComboBox = ServerComboBox(self)
-        layout.addRow(f"{Translator.translate('accountDialog.serverLabel')}: ", self.serversComboBox)
-
         self.usernameLineEdit = QLineEdit(self)
         layout.addRow(f"{Translator.translate('accountDialog.usernameLabel')}: ", self.usernameLineEdit)
 
@@ -34,10 +30,6 @@ class AccountDialog(QDialog):
 
         if accountData:
             self.idLineEdit.setText(accountData.get('id', ''))
-            for i in range(self.serversComboBox.count()):
-                if self.serversComboBox.itemData(i) == accountData.get('server'):
-                    self.serversComboBox.setCurrentIndex(i)
-                    break
             self.usernameLineEdit.setText(accountData.get('username', ''))
             self.passwordLineEdit.setText(accountData.get('password', ''))
             self.otpLineEdit.setText(accountData.get('otp', ''))
@@ -45,12 +37,31 @@ class AccountDialog(QDialog):
     def getData(self):
         return {
             'id': self.idLineEdit.text().strip() or None,
-            'server': self.serversComboBox.currentData(),
             'username': self.usernameLineEdit.text().strip(),
             'password': self.passwordLineEdit.text(),
             'otp': self.otpLineEdit.text().strip() or None,
         }
 
     def accept(self):
-        AccountsConfigManager.addOrUpdateAccount(self.getData())
+        data = self.getData()
+        # Validate required fields
+        missing = []
+        if not data.get('username'):
+            missing.append(Translator.translate('accountDialog.usernameLabel'))
+        if not data.get('password'):
+            missing.append(Translator.translate('accountDialog.passwordLabel'))
+        if not data.get('otp'):
+            missing.append(Translator.translate('accountDialog.otpLabel'))
+
+        if missing:
+            QMessageBox.warning(self, Translator.translate('accountDialog.title'),
+                                Translator.translate('accountDialog.requiredFieldsMissing') % (', '.join(missing)))
+            return
+
+        try:
+            AccountsConfigManager.addOrUpdateAccount(data)
+        except Exception as e:
+            QMessageBox.critical(self, Translator.translate('accountDialog.title'), str(e))
+            return
+
         return super().accept()

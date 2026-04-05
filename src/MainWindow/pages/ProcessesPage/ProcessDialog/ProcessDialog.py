@@ -1,12 +1,10 @@
 from PySide6.QtWidgets import QDialog, QFormLayout, QLineEdit, QPushButton, QHBoxLayout, QFileDialog, QMessageBox
-import time
+
 import os
 
 from utils.Translator import Translator
 from utils.ProcessesConfigManager import ProcessesConfigManager
 from MainWindow.pages.AccountsPage.AccountDialog.AccountDialogButton.AccountDialogButton import AccountDialogButton
-from MainWindow.pages.AccountsPage.AccountDialog.ServerComboBox.ServerComboBox import ServerComboBox
-
 
 class ProcessDialog(QDialog):
     def __init__(self, parent=None, processData=None):
@@ -14,9 +12,6 @@ class ProcessDialog(QDialog):
 
         layout = QFormLayout(self)
         self.setWindowTitle(Translator.translate('processDialog.title'))
-
-        self.serversComboBox = ServerComboBox(self)
-        layout.addRow(f"{Translator.translate('processDialog.serverLabel')}: ", self.serversComboBox)
 
         pathRow = QHBoxLayout()
         self.pathLineEdit = QLineEdit(self)
@@ -30,10 +25,6 @@ class ProcessDialog(QDialog):
         layout.addRow(self.dialogButtons)
 
         if processData:
-            for i in range(self.serversComboBox.count()):
-                if self.serversComboBox.itemData(i) == processData.get('server'):
-                    self.serversComboBox.setCurrentIndex(i)
-                    break
             self.pathLineEdit.setText(processData.get('path', ''))
 
     def onBrowse(self):
@@ -43,7 +34,6 @@ class ProcessDialog(QDialog):
 
     def getData(self):
         return {
-            'server': self.serversComboBox.currentData(),
             'path': self.pathLineEdit.text().strip(),
         }
 

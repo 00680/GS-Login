@@ -33,10 +33,6 @@ TRANSLATIONS = {
         LanguageKey.ENGLISH.value: 'Add/Edit Account',
         LanguageKey.CHINESE_HK.value: '新增/編輯帳號',
     },
-    'accountDialog.serverLabel': {
-        LanguageKey.ENGLISH.value: 'Server',
-        LanguageKey.CHINESE_HK.value: '伺服器',
-    },
     'accountDialog.usernameLabel': {
         LanguageKey.ENGLISH.value: 'Username',
         LanguageKey.CHINESE_HK.value: '使用者名稱',
@@ -46,8 +42,8 @@ TRANSLATIONS = {
         LanguageKey.CHINESE_HK.value: '密碼',
     },
     'accountDialog.otpLabel': {
-        LanguageKey.ENGLISH.value: 'OTP (optional)',
-        LanguageKey.CHINESE_HK.value: 'OTP（選填）',
+        LanguageKey.ENGLISH.value: 'OTP',
+        LanguageKey.CHINESE_HK.value: 'OTP',
     },
     'accountsPage.title': {
         LanguageKey.ENGLISH.value: 'Accounts',
@@ -64,10 +60,6 @@ TRANSLATIONS = {
     'processDialog.title': {
         LanguageKey.ENGLISH.value: 'Add/Edit Process',
         LanguageKey.CHINESE_HK.value: '新增/編輯程序',
-    },
-    'processDialog.serverLabel': {
-        LanguageKey.ENGLISH.value: 'Server',
-        LanguageKey.CHINESE_HK.value: '伺服器',
     },
     'processDialog.pathLabel': {
         LanguageKey.ENGLISH.value: 'Game Path',
@@ -112,5 +104,9 @@ TRANSLATIONS = {
     'helpMenu.userGuideZH_TW': {
         LanguageKey.ENGLISH.value: 'User Guide (繁體中文)',
         LanguageKey.CHINESE_HK.value: '使用指南（繁體中文）',
+    },
+    'accountDialog.requiredFieldsMissing': {
+        LanguageKey.ENGLISH.value: 'Please fill required fields: %s',
+        LanguageKey.CHINESE_HK.value: '請填寫必填欄位：%s',
     },
 }
