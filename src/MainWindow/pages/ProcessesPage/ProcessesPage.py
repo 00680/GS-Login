@@ -68,6 +68,22 @@ class ProcessesPage(QWidget):
 
     def updateTexts(self):
         self.title.setText(Translator.translate('processesPage.title'))
+        # update child process items so their localized strings refresh
+        try:
+            for i in range(self.processList.count()):
+                item = self.processList.item(i)
+                widget = self.processList.itemWidget(item)
+                try:
+                    if widget:
+                        widget.populateAccountCombo()
+                        try:
+                            widget.updateDisplay()
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
     def loadProcesses(self):
         self.processList.clear()

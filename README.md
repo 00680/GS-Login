@@ -120,3 +120,9 @@ python -m PyInstaller --clean --noconfirm gslogin.spec
 - 若要方便檢視打包內容，請在 spec 將 `ONEFILE` 設為 `False` 或以 one-folder 方式打包，這樣檔案會以資料夾形式保留在磁碟上。
 
 ---
+
+## User Guide
+
+- English: [USER_GUIDE_EN.md](v2/USER_GUIDE_EN.md)
+- 繁體中文: [USER_GUIDE_ZH_TW.md](v2/USER_GUIDE_ZH_TW.md)
+
