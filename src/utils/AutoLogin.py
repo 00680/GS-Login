@@ -8,6 +8,9 @@ import hashlib
 import struct
 import os
 import subprocess
+import json
+import shutil
+from pathlib import Path
 
 # Lazy-import heavy playwright modules at runtime to avoid slowing
 # application startup when this module is merely imported by the UI.
@@ -29,13 +32,16 @@ class AutoLogin:
         'widget.windows.window_occlusion_tracking.enabled': False,
     }
 
-    def __init__(self, process_id: str, account_id: str, headless: bool = False, firefox_prefs: dict | None = None, keep_open_seconds: float = 5.0):
+    def __init__(self, process_id: str, account_id: str, headless: bool = False, firefox_prefs: dict | None = None, keep_open_seconds: float = 5.0, keep_storage_state: bool = True, storage_base_dir: str | None = None):
         self.process_id = process_id
         self.account_id = account_id
         self.headless = headless
         self.firefox_prefs = firefox_prefs or dict(self.DEFAULT_FIREFOX_PREFS)
         self.keep_open_seconds = float(keep_open_seconds)
         self._thread: threading.Thread | None = None
+        # store storage_state across runs per-account under LOCALAPPDATA by default
+        self.keep_storage_state = bool(keep_storage_state)
+        self.storage_base_dir = storage_base_dir
 
     def loginTW(self, page, account: dict):
         username = account.get('username', '')
@@ -122,13 +128,35 @@ class AutoLogin:
             from playwright.sync_api import sync_playwright
 
             with sync_playwright() as p:
-                import tempfile
-                profile_dir = tempfile.mkdtemp(prefix='gslogin_firefox_')
-                context = p.firefox.launch_persistent_context(
-                    user_data_dir=profile_dir,
-                    headless=self.headless,
-                    firefox_user_prefs=self.firefox_prefs,
-                )
+                # determine storage_state path for this account (persistent)
+                storage_path = None
+                try:
+                    storage_path = self._get_storage_state_path(self.account_id)
+                except Exception:
+                    storage_path = None
+
+                # If we're keeping storage state across runs, prefer a persistent
+                # profile directory per-account so Playwright keeps the browser
+                # context alive and avoids UI-related throttling when inactive.
+                context = None
+                browser = None
+                if self.keep_storage_state and self.account_id:
+                    profiles_base = os.path.join(self._get_storage_state_base(), 'profiles')
+                    Path(profiles_base).mkdir(parents=True, exist_ok=True)
+                    safe = ''.join(c for c in self.account_id if c.isalnum() or c in ('-', '_')).strip() or 'account'
+                    user_data_dir = os.path.join(profiles_base, safe)
+                    context = p.firefox.launch_persistent_context(
+                        user_data_dir=user_data_dir,
+                        headless=self.headless,
+                        firefox_user_prefs=self.firefox_prefs,
+                    )
+                else:
+                    # fallback to stateless browser context using storage_state JSON
+                    browser = p.firefox.launch(headless=self.headless)
+                    if storage_path and os.path.exists(storage_path):
+                        context = browser.new_context(storage_state=storage_path)
+                    else:
+                        context = browser.new_context()
                 # reuse the initial page created by the persistent context
                 pages = context.pages
                 if pages:
@@ -140,11 +168,45 @@ class AutoLogin:
 
                 time.sleep(self.keep_open_seconds)
                 try:
-                    context.close()
-                except Exception:
-                    pass
+                    # save storage_state if requested and login succeeded
+                    if self.keep_storage_state and self.account_id:
+                        try:
+                            sp = self._get_storage_state_path(self.account_id)
+                            os.makedirs(os.path.dirname(sp), exist_ok=True)
+                            context.storage_state(path=sp)
+                        except Exception:
+                            pass
+                finally:
+                    try:
+                        context.close()
+                    except Exception:
+                        pass
+                    try:
+                        browser.close()
+                    except Exception:
+                        pass
         except Exception:
             traceback.print_exc()
+
+    def _get_storage_state_base(self) -> str:
+        # prefer explicit base dir, then LOCALAPPDATA, then user home
+        if self.storage_base_dir:
+            return self.storage_base_dir
+        la = os.getenv('LOCALAPPDATA')
+        if la:
+            return os.path.join(la, 'gslogin', 'storage_state')
+        return os.path.join(os.path.expanduser('~'), '.gslogin', 'storage_state')
+
+    def _get_storage_state_path(self, account_id: str) -> str:
+        if not account_id:
+            raise ValueError('account_id required for storage_state path')
+        base = self._get_storage_state_base()
+        Path(base).mkdir(parents=True, exist_ok=True)
+        # sanitize account_id for filename
+        safe = ''.join(c for c in account_id if c.isalnum() or c in ('-', '_')).strip()
+        if not safe:
+            safe = 'account'
+        return os.path.join(base, f'{safe}.json')
 
     def solveRecaptcha(self, page):
         capsolver_key = SettingsConfigManager.getCapSolverApiKey()
